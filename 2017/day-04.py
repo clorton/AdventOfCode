@@ -14,7 +14,7 @@ For example:
 The system's full passphrase list is available as your puzzle input. How many passphrases are valid?
 """
 
-with open('04.txt', 'r') as handle:
+with open('day-04-input.txt', 'r') as handle:
     lines = [line.split() for line in handle.readlines()]
 
 valid_count = 0

@@ -62,9 +62,11 @@ def distribute(counts, index):
         count -= 1
         index = (index + 1) % len(counts)
 
+    return
+
 
 # memory = [0, 2, 7, 0]
-with open('06.txt', 'r') as handle:
+with open('day-06-input.txt', 'r') as handle:
     data = [int(count) for count in handle.readline().split()]
 
 memory = [item for item in data]

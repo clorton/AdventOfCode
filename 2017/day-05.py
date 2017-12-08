@@ -36,7 +36,7 @@ In this example, the exit is reached in 5 steps.
 How many steps does it take to reach the exit?
 """
 
-with open('05.txt', 'r') as handle:
+with open('day-05-input.txt', 'r') as handle:
     data = [int(line) for line in handle.readlines()]
 
 jumps = [entry for entry in data]
