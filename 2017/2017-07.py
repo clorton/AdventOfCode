@@ -3,7 +3,7 @@
 from collections import namedtuple
 import re
 
-with open('day-07-input.txt', 'r') as handle:
+with open('2017-07.txt', 'r') as handle:
     lines = handle.readlines()
 
 Entry = namedtuple('Entry', ['weight', 'parent'])

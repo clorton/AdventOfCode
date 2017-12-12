@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-with open('day-02-input.txt', 'r') as handle:
+with open('2017-02.txt', 'r') as handle:
     data = [str(line) for line in handle.readlines()]
 
 

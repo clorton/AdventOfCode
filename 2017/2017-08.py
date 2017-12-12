@@ -4,7 +4,7 @@ from collections import defaultdict
 import operator
 import re
 
-with open('day-08-input.txt', 'r') as handle:
+with open('2017-08.txt', 'r') as handle:
     lines = handle.readlines()
 
 operations = {
