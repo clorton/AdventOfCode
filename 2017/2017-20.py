@@ -63,46 +63,49 @@ class Particle(object):
 def main():
 
     data = get_input()
-    particles = parse_data(data)
+    # particles = parse_data(data)
+    #
+    # for i in range(1000):
+    #     for particle in particles:
+    #         particle.update()
+    #
+    # distances = [particle.distance for particle in particles]
+    #
+    # index = -1
+    # minimum = sys.float_info.max
+    # for i in range(len(distances)):
+    #     if distances[i] < minimum:
+    #         index = i
+    #         minimum = distances[i]
+    #
+    # print('Minimum particle distance particle {0} ({1})'.format(index, minimum))
 
-    for i in range(1000):
-        for particle in particles:
-            particle.update()
-
-    distances = [particle.distance for particle in particles]
-
-    index = -1
-    minimum = sys.float_info.max
-    for i in range(len(distances)):
-        if distances[i] < minimum:
-            index = i
-            minimum = distances[i]
-
-    print('Minimum particle distance particle {0} ({1})'.format(index, minimum))
-
-    particles = parse_data(data)
-
-    for i in range(100):
-        positions = defaultdict(deque)
-        for p in range(len(particles)):
-            positions[particles[p].position].append(p)
-
-        for position, entries in positions.items():
-            if len(entries) > 1:
-                print('Particles {0} collided at i = {1}'.format(entries, i))
-                while len(entries) > 0:
-                    del particles[entries.pop()]
-
-        for particle in particles:
-            particle.update()
-
-    print('{0} particles remaining'.format(len(particles)))
+    # particles = parse_data(data)
+    #
+    # for i in range(100):
+    #     positions = defaultdict(deque)
+    #     for p in range(len(particles)):
+    #         positions[particles[p].position].append(p)
+    #
+    #     for position, entries in positions.items():
+    #         if len(entries) > 1:
+    #             print('Particles {0} collided at i = {1}'.format(entries, i))
+    #             while len(entries) > 0:
+    #                 del particles[entries.pop()]
+    #
+    #     for particle in particles:
+    #         particle.update()
+    #
+    # print('{0} particles remaining'.format(len(particles)))
 
     particles = parse_data(data)
 
     collided = set()
-    for i in range(len(particles)):
-        for j in range(i, len(particles)):
+    for i in range(len(particles)-1):
+        # TODO - consider removing particles based on time of collision
+        # so that a particle destroyed early doesn't cause the destruction
+        # of a particle later in time.
+        for j in range(i+1, len(particles)):
             t = intersect(particles[i], particles[j])
             if t:
                 collided.add(i)
@@ -132,33 +135,35 @@ def parse_data(data):
 
 def intersect(a, b):
 
-    def time(pa0, va0, aa0, pb0, vb0, ab0):
+    def times(pa0, va0, aa0, pb0, vb0, ab0):
+        solutions = []
         A = (aa0 - ab0) / 2
         B = (va0 - vb0) + A
         C = (pa0 - pb0)
         if A != 0:  # quadratic
             root = B * B - 4 * A * C
-            if (root >= 0) and (sqrt(root) == int(sqrt(root))) and (A != 0):
+            if root >= 0:
                 t = (-B + sqrt(root)) / (2 * A)
-                if t == int(t):
-                    return t
+                if (t == int(t)) and (t >= 0):
+                    solutions.append(t)
                 t = (-B - sqrt(root)) / (2 * A)
-                if t == int(t):
-                    return t
+                if (t == int(t)) and (t >= 0):
+                    solutions.append(t)
         elif B != 0:   # linear
             t = -C / B
-            if t == int(t):
-                return t
+            if (t == int(t)) and (t >= 0):
+                solutions.append(t)
         elif C == 0:
-            return 0
+            solutions.append(0)
 
-        return None
+        return solutions
 
-    tx = time(a.position.a, a.velocity.a, a.acceleration.a, b.position.a, b.velocity.a, b.acceleration.a)
-    ty = time(a.position.b, a.velocity.b, a.acceleration.b, b.position.b, b.velocity.b, b.acceleration.b)
-    tz = time(a.position.c, a.velocity.c, a.acceleration.c, b.position.c, b.velocity.c, b.acceleration.c)
-    if tx and (tx == ty) and (tx == tz):
-        return tx
+    tx = times(a.position.a, a.velocity.a, a.acceleration.a, b.position.a, b.velocity.a, b.acceleration.a)
+    ty = times(a.position.b, a.velocity.b, a.acceleration.b, b.position.b, b.velocity.b, b.acceleration.b)
+    tz = times(a.position.c, a.velocity.c, a.acceleration.c, b.position.c, b.velocity.c, b.acceleration.c)
+    for t in tx:
+        if (t in ty) and (t in tz):
+            return t
 
     return None
 
