@@ -37,6 +37,33 @@ def main():
             new_image.append(new_row)
         image = expand(new_image)
 
+    count = 0
+    for row in image:
+        count += row.count('#')
+
+    print('{0} pixels on in image'.format(count))
+
+    for i in range(5, 18):
+        enhancement = get_blocks(image)
+        new_image = []
+        for row in enhancement:
+            new_row = []
+            for col in row:
+                for rotation in col:
+                    print('Checking {0}'.format(rotation))
+                    if rotation in rules:
+                        print('{0} => {1}'.format(rotation, rules[rotation]))
+                        new_row.append(rules[rotation])
+                        break
+            new_image.append(new_row)
+        image = expand(new_image)
+
+    count = 0
+    for row in image:
+        count += row.count('#')
+
+    print('{0} pixels on in image'.format(count))
+
     return
 
 
@@ -91,7 +118,7 @@ def expand(patterns):
         row = patterns[y]
         for j in range(height):
             for x in range(len(row)):
-                image[y+j].extend(row[x].split('/')[j])
+                image[y*height+j].extend(row[x].split('/')[j])
 
     return image
 
