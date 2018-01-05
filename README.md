@@ -5,15 +5,18 @@ Solutions for Advent of Code
 
 ## 2017
 
-http://adventofcode.com/2017
-https://github.com/topics/advent-of-code-2017
+[AoC 2017](http://adventofcode.com/2017)
+
+[AoC 2017 on GitHub](https://github.com/topics/advent-of-code-2017)
 
 ## 2016
 
-http://adventofcode.com/2016
-https://github.com/topics/advent-of-code-2016
+[AoC 2016](http://adventofcode.com/2016)
+
+[AoC 2016 on GitHub](https://github.com/topics/advent-of-code-2016)
 
 ## 2015
 
-http://adventofcode.com/2015
-https://github.com/topics/advent-of-code-2015
+[AoC 2015](http://adventofcode.com/2015)
+
+[AoC 2015 on GitHub](https://github.com/topics/advent-of-code-2015)
