@@ -54,8 +54,8 @@ what signal is ultimately provided to wire a?
 
 
 class Component(object):
-    def __init__(self):
-        pass
+    def __init__(self, sources=None):
+        self._sources = sources
 
     def value(self):
         raise RuntimeError('Not implemented.')
@@ -63,10 +63,11 @@ class Component(object):
 
 class Constant(Component):
     def __init__(self, constant=None):
-        super().__init__()
+        super().__init__(sources=None)
         self.constant = int(constant)
 
     def value(self):
+        print(self)
         return self.constant
 
     def __str__(self):
@@ -74,12 +75,14 @@ class Constant(Component):
 
 
 class Wire(Component):
+
     def __init__(self, source=None, system=None):
         super().__init__()
         self.source = source
         self.system = system
 
     def value(self):
+        print(self)
         return self.system[self.source].value()
 
     def __str__(self):
@@ -92,6 +95,7 @@ class Not(Component):
         self.source = source
 
     def value(self):
+        print(self)
         return self.source.value() ^ 65535
 
     def __str__(self):
@@ -104,6 +108,7 @@ class And(Component):
         self.sources = sources
 
     def value(self):
+        print(self)
         return reduce(lambda x, y: x & y, [source.value() for source in self.sources])
 
     def __str__(self):
@@ -116,6 +121,7 @@ class Or(Component):
         self.sources = sources
 
     def value(self):
+        print(self)
         return reduce(lambda x, y: x | y, [source.value() for source in self.sources])
 
     def __str__(self):
@@ -129,6 +135,7 @@ class Left(Component):
         self.amount = amount
 
     def value(self):
+        print(self)
         return self.source.value() << self.amount.value()
 
     def __str__(self):
@@ -142,6 +149,7 @@ class Right(Component):
         self.amount = amount
 
     def value(self):
+        print(self)
         return self.source.value() >> self.amount.value()
 
     def __str__(self):
@@ -149,8 +157,20 @@ class Right(Component):
 
 
 def main():
+
     with open('2015-07.txt', 'r') as handle:
         instructions = handle.readlines()
+
+    # instructions = [
+    #     '123 -> x',
+    #     '456 -> y',
+    #     'x AND y -> d',
+    #     'x OR y -> e',
+    #     'x LSHIFT 2 -> f',
+    #     'y RSHIFT 2 -> g',
+    #     'NOT x -> h',
+    #     'NOT y -> i'
+    # ]
 
     state = {}
 
@@ -166,10 +186,7 @@ def main():
         match = initialize.match(instruction)
         if match:
             source, destination = match.groups()
-            if source.isalpha():
-                state[destination] = Wire(source, state)
-            else:
-                state[destination] = Constant(source)
+            state[destination] = Wire(source, state) if source.isalpha() else Constant(source)
             continue
 
         match = invert.match(instruction)
