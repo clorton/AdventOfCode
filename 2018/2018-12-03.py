@@ -1,6 +1,10 @@
 #!/usr/bin/python
 
 from __future__ import print_function
+from collections import namedtuple
+
+
+Claim = namedtuple('Claim', ['id', 'x', 'y', 'width', 'height'])
 
 
 def main():
@@ -25,19 +29,16 @@ def part1(lines):
     claims = {}
     for line in lines:
         elements = [int(entry) for entry in line.replace('#', '').replace('@', '').replace(',', ' ').replace(':', '').replace('x', ' ').split()]
-        claim_id = elements[0]
-        claims[claim_id] = [(elements[1], elements[2]), (elements[3], elements[4])]
+        claim = Claim(*elements)
+        claims[claim.id] = claim
 
     fabric = [[0 for _ in range(1000)] for __ in range(1000)]
     count = 0
-    for claim_id in claims:
-        claim = claims[claim_id]
-        x_start = claim[0][0]
-        y_start = claim[0][1]
-        for y in range(claim[1][1]):
-            for x in range(claim[1][0]):
-                fabric[y_start+y][x_start+x] += 1
-                if fabric[y_start+y][x_start+x] == 2:
+    for claim in claims.itervalues():
+        for h in range(claim.height):
+            for w in range(claim.width):
+                fabric[claim.y+h][claim.x+w] += 1
+                if fabric[claim.y+h][claim.x+w] == 2:
                     count += 1
 
     print('Count = {0}'.format(count))
@@ -50,35 +51,26 @@ def part2(lines):
     claims = {}
     for line in lines:
         elements = [int(entry) for entry in line.replace('#', '').replace('@', '').replace(',', ' ').replace(':', '').replace('x', ' ').split()]
-        claim_id = elements[0]
-        claims[claim_id] = [(elements[1], elements[2]), (elements[3], elements[4])]
+        claim = Claim(*elements)
+        claims[claim.id] = claim
 
     overlaps = {claim_id: False for claim_id in claims}
     for id_a in claims:
         if not overlaps[id_a]:
+            claim_a = claims[id_a]
             for id_b in claims:
                 if id_b != id_a:
-                    a_xstart = claims[id_a][0][0]
-                    b_xstart = claims[id_b][0][0]
-                    a_xend = a_xstart + claims[id_a][1][0]
-                    b_xend = b_xstart + claims[id_b][1][0]
-                    a_ystart = claims[id_a][0][1]
-                    b_ystart = claims[id_b][0][1]
-                    a_yend = a_ystart + claims[id_a][1][1]
-                    b_yend = b_ystart + claims[id_b][1][1]
-                    if (a_xstart > b_xend) or (a_xend < b_xstart) or (a_ystart > b_yend) or (a_yend < b_ystart):
+                    claim_b = claims[id_b]
+                    if (claim_a.x > (claim_b.x + claim_b.width)) or ((claim_a.x + claim_a.width) < claim_b.x) or \
+                            (claim_a.y > (claim_b.y + claim_b.height)) or ((claim_a.y + claim_a.height) < claim_b.y):
                         pass
                     else:
-                        # print('{0} overlaps {1}'.format(claims[id_a], claims[id_b]))
                         overlaps[id_a] = True
                         continue
 
     for claim_id in overlaps:
         if not overlaps[claim_id]:
             print('Claim {0} does not overlap.'.format(claim_id))
-
-
-
 
     return
 
