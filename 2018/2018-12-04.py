@@ -8,7 +8,6 @@ def main():
 
     lines = load_data()
     part1(lines)
-    part2(lines)
 
     return
 
@@ -26,7 +25,8 @@ def part1(lines):
     log = defaultdict(lambda: [0 for _ in range(60)])
 
     lines.sort()
-    guard = -1
+    guard = None
+    sleep = None
     for line in lines:
         if 'begins' in line:
             guard = int(line.replace('#', '').split()[3])
@@ -37,27 +37,30 @@ def part1(lines):
             for minute in range(sleep, wake):
                 log[guard][minute] += 1
         else:
-            raise RuntimeError('Unknown entry: {0}'.line)
+            raise RuntimeError('Unknown entry: {0}'.format(line))
 
     max_minutes = 0
     max_id = -1
     for guard in log:
         schedule = log[guard]
         count = 0
-        sum = 0
+        total = 0
         for minute in schedule:
-            sum += minute
+            total += minute
             if minute > 0:
                 count += 1
-        print('{0} for {1} minutes'.format(guard, sum))
-        if sum > max_minutes:
-            max_minutes = sum
+        print('{0} for {1} minutes'.format(guard, total))
+        if total > max_minutes:
+            max_minutes = total
             max_id = guard
 
     schedule = log[max_id]
     print('{0}: {1}'.format(max_id, schedule))
     max_index = schedule.index(max(schedule))
-    print('{0} * (index) {1} = {2}'.format(max_id, max_index, max_id*max_index))
+    print('Guard {0} slept a total of {1} minutes. Most often on minute {2}.'.format(max_id, max_minutes, max_index))
+    print('(guard id) {0} * {1} (index) = {2}'.format(max_id, max_index, max_id*max_index))
+
+    # part 2
 
     maximum = 0
     max_id = -1
@@ -71,12 +74,8 @@ def part1(lines):
     schedule = log[max_id]
     print('{0}: {1}'.format(max_id, schedule))
     max_index = schedule.index(max(schedule))
-    print('{0} * (index) {1} = {2}'.format(max_id, max_index, max_id*max_index))
-
-    return
-
-
-def part2(lines):
+    print('Guard {0} was asleep on minute {1} {2} times.'.format(max_id, max_index, maximum))
+    print('(guard id) {0} * {1} (index) = {2}'.format(max_id, max_index, max_id*max_index))
 
     return
 
