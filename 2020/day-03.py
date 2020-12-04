@@ -9,7 +9,7 @@ text = (Path(__file__).parent.absolute() / "day-03.txt").read_text()
 lines = text.split("\n")
 
 
-def trees_for_slope(dx: int, dy: int, lines: list ) -> int:
+def trees_for_slope(dx: int, dy: int, lines: list) -> int:
     x = 0
     y = 0
     # dx = 3
@@ -24,10 +24,12 @@ def trees_for_slope(dx: int, dy: int, lines: list ) -> int:
 
     return count
 
-count = trees_for_slope(3, 1, lines)
 
-print(f"Encountered {count} trees.")
+trees = trees_for_slope(3, 1, lines)
 
+print(f"Encountered {trees} trees.")
+
+# part2
 slopes = [
     (1, 1),
     (3, 1),
