@@ -32,6 +32,8 @@ for entry in entries:
 
 print(f"Found {valid} valid passports")
 
+# part 2
+
 validate = {
     'byr': lambda v: 1920 <= int(v) <= 2002,
     'iyr': lambda v: 2010 <= int(v) <= 2020,
@@ -43,8 +45,6 @@ validate = {
     'cid': lambda v: True
 }
 
-# part2
-
 valid = 0
 for entry in entries:
     if set(entry.keys()) >= fields:
@@ -55,4 +55,4 @@ for entry in entries:
 
 print(f"Found {valid} valid passports")
 
-pass
+print("done")
