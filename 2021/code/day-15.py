@@ -9,7 +9,7 @@ import numpy as np
 
 t_start = datetime.now()
 
-with Path("15.txt").open("r") as handle:
+with Path("../inputs/15.txt").open("r") as handle:
     lines = list([list(map(int, list(line.strip()))) for line in handle.readlines()])
 
 """

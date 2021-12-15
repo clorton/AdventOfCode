@@ -19,7 +19,7 @@ from pathlib import Path
 
 """
 
-with Path("08.txt").open("r") as handle:
+with Path("../inputs/08.txt").open("r") as handle:
     lines = [line.strip() for line in handle.readlines()]
 
 lines = list([line.split(" | ") for line in lines])

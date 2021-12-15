@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-with Path("12.txt").open("r") as handle:
+with Path("../inputs/12.txt").open("r") as handle:
     lines = list([line.strip().split("-") for line in handle.readlines()])
 
 t_start = datetime.now()

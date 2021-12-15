@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 from scipy import ndimage
 
-with Path("09.txt").open("r") as handle:
+with Path("../inputs/09.txt").open("r") as handle:
     lines = list([line.strip() for line in handle.readlines()])
 
 lines = list([list(map(int, list(line))) for line in lines])

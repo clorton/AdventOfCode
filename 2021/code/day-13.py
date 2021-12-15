@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-with Path("13.txt").open("r") as handle:
+with Path("../inputs/13.txt").open("r") as handle:
     lines = list([line.strip() for line in handle.readlines()])
 
 """

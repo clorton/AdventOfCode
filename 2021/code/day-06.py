@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-with Path("06.txt").open("r") as handle:
+with Path("../inputs/06.txt").open("r") as handle:
     lines = list([line.strip() for line in handle.readlines()])
 
 timers = list(map(int, lines[0].split(",")))

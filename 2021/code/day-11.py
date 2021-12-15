@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 
-with Path("11.txt").open("r") as handle:
+with Path("../inputs/11.txt").open("r") as handle:
     lines = list([list(map(int, line.strip())) for line in handle.readlines()])
 
 # lines = [list(map(int, line)) for line in [

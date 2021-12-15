@@ -3,7 +3,7 @@
 from pathlib import Path
 import numpy as np
 
-with Path("03.txt").open("r") as handle:
+with Path("../inputs/03.txt").open("r") as handle:
     lines = handle.readlines()
 
 values = list(map(lambda s: [int(b) for b in s.strip()], lines))

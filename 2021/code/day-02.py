@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-with Path("02.txt").open("r") as handle:
+with Path("../inputs/02.txt").open("r") as handle:
     lines = handle.readlines()
 
 movement = list([l.split() for l in lines])

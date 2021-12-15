@@ -3,7 +3,7 @@
 from pathlib import Path
 import numpy as np
 
-with Path("04.txt").open("r") as handle:
+with Path("../inputs/04.txt").open("r") as handle:
     lines = [line.strip() for line in handle.readlines() if line != "\n"]
 
 prng = lines.pop(0)

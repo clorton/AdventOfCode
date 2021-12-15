@@ -3,7 +3,7 @@
 from functools import partial
 from pathlib import Path
 
-with Path("10.txt").open("r") as handle:
+with Path("../inputs/10.txt").open("r") as handle:
     lines = list([list(line.strip()) for line in handle.readlines()])
 
 # lines = [

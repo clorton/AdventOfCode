@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 
-with Path("07.txt").open("r") as handle:
+with Path("../inputs/07.txt").open("r") as handle:
     lines = [line.strip() for line in handle.readlines()]
 
 positions = np.array(list(map(int, lines[0].split(","))), dtype=np.int64)

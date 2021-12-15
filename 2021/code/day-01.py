@@ -3,7 +3,7 @@
 from pathlib import Path
 import numpy as np
 
-with Path("01.txt").open("r") as handle:
+with Path("../inputs/01.txt").open("r") as handle:
     data = handle.readlines()
 
 data = np.array(list(map(lambda n: int(n), data)), dtype=np.int64)
