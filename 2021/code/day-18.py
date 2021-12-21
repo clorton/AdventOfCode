@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+from collections import deque
 from pathlib import Path
 
 with Path("../inputs/18.txt").open("r") as handle:
@@ -40,18 +41,29 @@ example = [
 ]   # [[[[6,6],[7,6]],[[7,7],[7,0]]],[[[7,7],[7,7]],[[7,8],[9,9]]]] = 4140
 
 
-def inorder(number, depth=0, stack=None):
+class Number:
 
-    if stack is None:
-        stack = []
+    def __init__(self, value):
+        self.value = value
+        return
+
+    def __int__(self):
+        return self.value
+
+    def __str__(self):
+        return f"{self.value}"
+
+
+def inorder(number, stack, depth=0):
 
     if isinstance(number, list):
         left, right = number
-        _ = inorder(left, depth+1, stack)
+        _ = inorder(left, stack, depth+1)
         stack.append((number, depth))
-        _ = inorder(right, depth+1, stack)
+        _ = inorder(right, stack, depth+1)
     else:
-        stack.append((number, depth))
+        pass
+        # stack.append((number, depth))
 
     return stack
 
@@ -61,7 +73,46 @@ def add_snailfish(left, right):
     return [left, right]
 
 
+test = eval(test_cases[0])
+
+
+def visit(number):
+
+    to_visit = [number]
+    visited = []
+
+    while len(to_visit):
+
+        number = to_visit.pop()
+        if len(to_visit) == 4:     # explode
+            assert isinstance(number, list)
+            add_left, add_right = number
+            assert isinstance(add_left, int)
+            assert isinstance(add_right, int)
+            break
+
+        if isinstance(number, list):
+            visited.append(number)
+            left, right = number
+            to_visit.append(right)
+            to_visit.append(left)
+        else:
+            pass    # integer
+
+    # traverse backward, add_left to next number
+    # continue forward, add_right to next number
+
+    return
+
+
+stack = inorder(test, [])
+stack = list(filter(lambda e: isinstance(e[0], list), stack))
+test = eval("[[[[0,7],4],[7,[[8,4],9]]],[1,1]]")
+stack = inorder(test, [])
+stack = list(filter(lambda e: isinstance(e[0], list), stack))
+visit(test)
+
 for test_case in test_cases:
-    stack = inorder(test_case)
+    stack = inorder(eval(test_case), [])
 
 pass
