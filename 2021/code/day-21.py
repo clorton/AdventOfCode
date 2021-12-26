@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+from collections import namedtuple
 import numpy as np
 
 """
@@ -51,6 +52,75 @@ kernel = np.array([0, 0, 0, 1, 3, 6, 7, 6, 3, 1], dtype=np.uint64)
 p1_position = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 0], dtype=np.uint64)
 p2_position = np.array([0, 0, 1, 0, 0, 0, 0, 0, 0, 0], dtype=np.uint64)
 
-test = p1_position * kernel.transpose()
+Roll = namedtuple("Roll", ["total", "ways"])
+
+rolls = [
+    Roll(3, 1),     # 1+1+1
+    Roll(4, 3),     # 1+1+2, 1+2+1, 2+1+1
+    Roll(5, 6),     # 1+1+3, 1+2+2, 1+3+1, 2+1+2, 2+2+1, 3+1+1
+    Roll(6, 7),     # 1+2+3, 1+3+2, 2+1+3, 2+2+2, 2+3+1, 3+1+2, 3+2+1
+    Roll(7, 6),     # 1+3+3, 2+2+3, 2+3+2, 3+1+3, 3+2+2, 3+3+1
+    Roll(8, 3),     # 2+3+3, 3+2+3, 3+3+2
+    Roll(9, 1)      # 3+3+3
+]
+
+
+def next_state(old_state, multiplier):
+    status = {}
+    wins = 0
+    for position in old_state.keys():
+        for score in old_state[position]:
+            old_state[position][score] *= multiplier
+        for score, ways in old_state[position].items():
+            for roll in rolls:
+                new_position = (position + roll.total) % 10
+                new_score = score + (new_position + 1)
+                new_ways = ways * roll.ways
+                if new_score >= 21:
+                    wins += new_ways
+                else:
+                    if new_position not in status:
+                        status[new_position] = {}
+                    if new_score not in status[new_position]:
+                        status[new_position][new_score] = 0
+                    status[new_position][new_score] += new_ways
+
+    return status, wins
+
+
+p1 = [
+    # {8: {0: 1}}
+    {3: {0: 1}}     # test (start = 4)
+]
+
+p2 = [
+    # {2: {0: 1}}
+    {7: {0: 1}}     # test (start = 8)
+]
+
+p1_wins = 0
+p2_wins = 0
+
+mult = 1
+
+while True:
+    state = p1[-1]
+    new_state, additional_wins = next_state(state, multiplier=mult)
+    p1.append(new_state)
+    p1_wins += additional_wins
+    if len(new_state) == 0:
+        break
+
+    mult = 7
+
+    state = p2[-1]
+    new_state, additional_wins = next_state(state, mult)
+    p2.append(new_state)
+    p2_wins += additional_wins
+    if len(new_state) == 0:
+        break
+
+print(f"     {p1_wins:30},         {p2_wins:30}")
+print(f"c.f. {444356092776315:30} and      {341960390180808:30}")
 
 pass
