@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 import numpy as np
 
 """
@@ -65,60 +65,59 @@ rolls = [
 ]
 
 
-def next_state(old_state, multiplier):
-    status = {}
+def next_state(old_state, other):
+    new_state = [defaultdict(int) for _ in range(10)]
     wins = 0
-    for position in old_state.keys():
-        for score in old_state[position]:
-            old_state[position][score] *= multiplier
+    for position in range(10):
         for score, ways in old_state[position].items():
             for roll in rolls:
                 new_position = (position + roll.total) % 10
                 new_score = score + (new_position + 1)
                 new_ways = ways * roll.ways
                 if new_score >= 21:
-                    wins += new_ways
+                    wins += new_ways * other
                 else:
-                    if new_position not in status:
-                        status[new_position] = {}
-                    if new_score not in status[new_position]:
-                        status[new_position][new_score] = 0
-                    status[new_position][new_score] += new_ways
+                    new_state[new_position][new_score] += new_ways
 
-    return status, wins
+    return new_state, wins
 
 
-p1 = [
-    # {8: {0: 1}}
-    {3: {0: 1}}     # test (start = 4)
-]
+def total_ways(state):
 
-p2 = [
-    # {2: {0: 1}}
-    {7: {0: 1}}     # test (start = 8)
-]
+    total = 0
+    for position in state:
+        for ways in position.values():
+            total += ways
+
+    return total
+
+
+p1 = [[{} for _ in range(10)]]
+p1[0][8] = {0: 1}   # start = 9
+# p1[0][3] = {0: 1}   # test start = 4
+
+p2 = [[{} for _ in range(10)]]
+p2[0][2] = {0: 1}   # start = 3
+# p2[0][7] = {0: 1}   # test start = 8
 
 p1_wins = 0
 p2_wins = 0
 
-mult = 1
-
 while True:
     state = p1[-1]
-    new_state, additional_wins = next_state(state, multiplier=mult)
+    new_state, additional_wins = next_state(state, other=total_ways(p2[-1]))
     p1.append(new_state)
     p1_wins += additional_wins
-    if len(new_state) == 0:
+    if not any(new_state):
         break
-
-    mult = 7
 
     state = p2[-1]
-    new_state, additional_wins = next_state(state, mult)
+    new_state, additional_wins = next_state(state, other=total_ways(p1[-1]))
     p2.append(new_state)
     p2_wins += additional_wins
-    if len(new_state) == 0:
+    if not any(new_state):
         break
+
 
 print(f"     {p1_wins:30},         {p2_wins:30}")
 print(f"c.f. {444356092776315:30} and      {341960390180808:30}")
