@@ -1,9 +1,12 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 from collections import namedtuple
 import re
 
-with open('2017-07.txt', 'r') as handle:
+from pathlib import Path
+WORK_DIR = Path(__file__).parent.absolute()
+
+with (WORK_DIR / "2017-07.txt").open("r") as handle:
     lines = handle.readlines()
 
 Entry = namedtuple('Entry', ['weight', 'parent'])

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 """
 An urgent interrupt arrives from the CPU: it's trapped in a maze of jump instructions, and it would like assistance from
@@ -36,7 +36,10 @@ In this example, the exit is reached in 5 steps.
 How many steps does it take to reach the exit?
 """
 
-with open('2017-05.txt', 'r') as handle:
+from pathlib import Path
+WORK_DIR = Path(__file__).parent.absolute()
+
+with (WORK_DIR / "2017-05.txt").open("r") as handle:
     data = [int(line) for line in handle.readlines()]
 
 jumps = [entry for entry in data]

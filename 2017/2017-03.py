@@ -198,6 +198,6 @@ for x, y in addresses():
         total += value
     ram[y][x] = total
     print('Wrote {total:6} to   ({x:3},{y:3})'.format(total=total, x=x, y=y))
-    if total > 289326:
+    if total > 265149:   # 289326:
         print('Wrote memory value {0}'.format(total))
         break

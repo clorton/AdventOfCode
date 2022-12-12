@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python3
 
 from functools import reduce
 
@@ -66,7 +66,10 @@ def distribute(counts, index):
 
 
 # memory = [0, 2, 7, 0]
-with open('2017-06.txt', 'r') as handle:
+from pathlib import Path
+WORK_DIR = Path(__file__).parent.absolute()
+
+with (WORK_DIR / "2017-06.txt").open("r") as handle:
     data = [int(count) for count in handle.readline().split()]
 
 memory = [item for item in data]

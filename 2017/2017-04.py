@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 """
 A new system policy has been put in place that requires all accounts to use a passphrase instead of simply a password. A passphrase consists of a series of words (lowercase letters) separated by spaces.
@@ -14,7 +14,10 @@ For example:
 The system's full passphrase list is available as your puzzle input. How many passphrases are valid?
 """
 
-with open('2017-04.txt', 'r') as handle:
+from pathlib import Path
+WORK_DIR = Path(__file__).parent.absolute()
+
+with (WORK_DIR / "2017-04.txt").open("r") as handle:
     lines = [line.split() for line in handle.readlines()]
 
 valid_count = 0

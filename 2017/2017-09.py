@@ -1,9 +1,12 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 
 def main():
 
-    with open('2017-09.txt', 'r') as handle:
+    from pathlib import Path
+    WORK_DIR = Path(__file__).parent.absolute()
+
+    with (WORK_DIR / "2017-09.txt").open("r") as handle:
         stream = handle.readline()
 
     groups, score, garbage = process_stream(stream)
