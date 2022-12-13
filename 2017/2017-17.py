@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#! /usr/bin/env python3
 
 import numpy
 
@@ -39,7 +39,7 @@ def main():
 
     angry_spinlock(2018, 2017)
     angrier_spinlock(count=10, step=3)
-    angrier_spinlock(count=50000000, step=382)
+    angrier_spinlock(count=50000000, step=337)
 
     return
 
@@ -50,7 +50,8 @@ def angry_spinlock(count, target):
     index = 0
     length = 1
     for i in range(1, count):
-        increment = 382 % length
+        # increment = 382 % length
+        increment = 337 % length
         index += increment
         index %= length
         for j in range(length, index, -1):
@@ -59,28 +60,29 @@ def angry_spinlock(count, target):
         index += 1
         length += 1
 
-    for i in range(len(buffer)):
-        if buffer[i] == target:
-            print('Next value is {0}'.format(buffer[(i+1)%len(buffer)]))
+    for i, entry in enumerate(buffer):
+        if entry == target:
+            print(f'Next value is {buffer[(i+1)%len(buffer)]}')
             break
 
     return
 
 
-def angrier_spinlock(count=50000000, step=382):
+def angrier_spinlock(count=50000000, step=337):
 
     index = 0
     length = 1
     next = None
     for i in range(1, count):
-        index += 382 % length
+        # index += 382 % length
+        index += 337 % length
         index %= length
         if index == 0:
             next = i
         index += 1
         length += 1
 
-    print('Next value is {0}'.format(next))
+    print(f'Next value is {next}')
 
     return
 

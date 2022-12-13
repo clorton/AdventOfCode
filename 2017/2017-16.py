@@ -1,7 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+
+from pathlib import Path
 
 import numpy
 
+WORKDIR = Path(__file__).parent.absolute()
 
 class State(object):
     def __init__(self, size=16):
@@ -42,34 +45,33 @@ class State(object):
 
 def main():
 
-    ROUNDS = 28 # Pattern cycles every 36 rounds, 1,000,000,000 % 36 = 28
-
-    with open('2017-16.txt', 'r') as handle:
+    with (WORKDIR / '2017-16.txt').open("r") as handle:
         dance = handle.readline().split(',')
 
-    programs = [c for c in 'abcdefghijklmnop']
-
-    # programs = [c for c in 'abcde']
-    # dance = ['s1', 'x3/4', 'pe/b']
-
+    programs = list('abcdefghijklmnop')
     programs = one_round(programs, dance)
-    print('One round final arrangement = {0}\n'.format(''.join(programs)))
-
-    # programs = [c for c in 'abcdefghijklmnop']
-    # for i in range(ROUNDS):
-    #     programs = one_round(programs, dance)
-    # print('Final arrangement ({0} rounds) = {1}\n'.format(ROUNDS, ''.join(programs)))
+    print('One round final arrangement = {"".join(programs)}\n')
 
     moves = get_dance_moves(dance)
-    # state = State()
-    # a_round(state, moves)
-    # print('State final arrangement = {0}\n'.format(state))
 
     state = State()
-    for i in range(ROUNDS): # range(1000000000):
-        print('{0:3}: {1}'.format(i, state))
+    cycle = 0
+    target = str(state)
+    while True:
+        cycle += 1
         a_round(state, moves)
-    print('State final arrangement ({0} rounds) = {1}\n'.format(ROUNDS, state))
+        if str(state) == target:
+            break
+
+    print(f"cycle = {cycle}")
+    ROUNDS = 1_000_000_000 % cycle
+    print(f"ROUNDS = {ROUNDS}")
+
+    state = State()
+    for i in range(ROUNDS):
+        print(f'{i:3}: {state}')
+        a_round(state, moves)
+    print(f'State final arrangement ({ROUNDS} rounds) = {state}\n')
 
     return
 
