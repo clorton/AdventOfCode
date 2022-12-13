@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 from functools import reduce
+from pathlib import Path
 from typing import List
 
 import numpy as np
 
-from pathlib import Path
 WORK_DIR = Path(__file__).parent.absolute()
 
 with (WORK_DIR / "2017-10.txt").open("r") as handle:
@@ -37,7 +37,7 @@ def main() -> None:
     product = memory[0] * memory[1]
     print(f'memory[0] = {memory[0]}, memory[1] = {memory[1]}, product = {product}')
 
-    lengths = [int(b) for b in bytes(line, 'utf-8')]
+    lengths = [int(b) for b in bytes(line.strip(), 'utf-8')]
     lengths.extend([17,31,73,47,23])
     memory = np.arange(256, dtype=np.int32) # list(range(256))
     current_position = 0
