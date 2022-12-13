@@ -1,7 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 from collections import namedtuple
+from pathlib import Path
 
+WORKDIR = Path(__file__).parent.absolute()
 
 Layer = namedtuple('Layer', ['depth', 'location', 'delta'])
 
@@ -50,8 +52,8 @@ def main():
     return
 
 
-def get_input(filename='2017-13.txt'):
-    with open(filename, 'r') as handle:
+def get_input(filename=Path(WORKDIR / '2017-13.txt')):
+    with filename.open("r") as handle:
         data = handle.readlines()
 
     return data

@@ -1,10 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 from collections import defaultdict, deque
+from pathlib import Path
+
+WORK_DIR = Path(__file__).parent.absolute()
 
 
-def get_input(filename='2017-12.txt'):
-    with open(filename, 'r') as handle:
+def get_input(filename=(WORK_DIR / '2017-12.txt')):
+    with filename.open("r") as handle:
         data = handle.readlines()
 
     return data

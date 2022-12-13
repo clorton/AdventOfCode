@@ -63,37 +63,39 @@ def main():
 
 def get_input(filename='2017-14.txt'):
 
-    return 'amgozmfv'
-    # return 'flqrgnkx'
+    return 'wenycdww'
 
 
 def knot_hash(key):
+
     lengths = [int(b) for b in bytes(key, 'utf-8')]
     lengths.extend([17, 31, 73, 47, 23])
-    memory = [i for i in range(256)]
+    memory = list(range(256))
     current_position = 0
     skip_size = 0
     for round in range(64):
         for length in lengths:
             extract = contents(memory, current_position, length)
-            reverse = [item for item in reversed(extract)]
+            reverse = list(reversed(extract))
             update(memory, current_position, length, reverse)
             current_position += length + skip_size
             skip_size += 1
 
-    hash = [reduce(lambda x, y: x ^ y, memory[start:start + 16]) for start in range(0, 256, 16)]
-    string = reduce(lambda x, y: x + '{0:02x}'.format(y), hash, '')
-    # print('Hash = {0}'.format(hash))
+    hashstring = [reduce(lambda x, y: x ^ y, memory[start:start + 16]) for start in range(0, 256, 16)]
+    string = reduce(lambda x, y: x + '{0:02x}'.format(y), hashstring, '')
+    # print('Hash = {0}'.format(hashstring))
     # print('Hex  = {0}'.format(string))
 
-    return hash, string
+    return hashstring, string
 
 
 def contents(source, index, count):
+
     return [source[i % len(source)] for i in range(index, index+count)]
 
 
 def update(destination, index, count, source):
+
     for i in range(count):
         destination[(index+i) % len(destination)] = source[i]
 
@@ -101,6 +103,7 @@ def update(destination, index, count, source):
 
 
 def clear_region(column, row, memory):
+
     queue = deque()
     queue.append((column, row))
     while len(queue) > 0:
