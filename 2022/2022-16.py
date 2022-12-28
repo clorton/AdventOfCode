@@ -140,76 +140,40 @@ def part1() -> None:
     unopened = [key for key, value in valves.items() if value.rate > 0]
     print(f"{unopened=}")
 
-    # tstart = datetime.now()
-    # # options = [shortest_path("AA", valve, valves) for valve in unopened]
-    # options = []
-    # for valve in unopened:
-    #     print(f"{valve}...", end="")
-    #     shortest = shortest_path("AA", valve, valves)
-    #     print(f"{shortest}")
-    #     options.append(shortest)
-    # tfinish = datetime.now()
-    # print(f"{tfinish-tstart} to calculate shortest paths")
-    # # print(f"{options=}")
-
-    # # for path in options:
-    # #     print(f"unopened valves in {path} = {len(set(path) & set(unopened))}")
-
-    # longest = max(map(len, options))
-    # longest = list(filter(lambda o:len(o) == longest, options))[0]
-
-    # value = value_of(longest, 30, set(unopened), valves)
-    # print(f"Value of {longest}, 30, {set(unopened)}, ...valves... = {value}")
-
-    ##########
-
-    # unopened = set([key for key in valves if valves[key].rate > 0])
-    # unopened = set(unopened)
-    # best_path = ["AA"]
-    # best_value = 0
-    # remaining = 30
-
-    # while remaining > 0:
-
-    #     next_path = []
-    #     next_value = 0
-    #     next_on = set()
-    #     next_elapsed = 0
-
-    #     for option in [shortest_path(best_path[-1], valve, valves) for valve in unopened]:
-    #         value, on, elapsed = value_of(option, remaining, unopened, valves)
-    #         if (value > next_value) and (elapsed <= remaining):
-    #             next_path = option
-    #             next_value = value
-    #             next_on = on
-    #             next_elapsed = elapsed
-
-    #     best_path += next_path[1:]
-    #     best_value += next_value
-    #     unopened -= next_on
-    #     remaining -= next_elapsed
-
-    #     if next_elapsed == 0:   # didn't find any valid candidates
-    #         break
-
-    #     if len(unopened) == 0:  # opened all available useful valves
-    #         break
-
-    # print(f"{best_path=}")
-    # print(f"{best_value=}") # 1840 is too low
-    # print(f"{remaining=}")
-
     distances = np.zeros((len(unopened)+1,len(unopened)+1), np.uint32)
+    states = np.zeros(len(unopened)+1, np.uint32)
+    values = np.zeros(len(unopened)+1, np.uint32)
 
     tstart = datetime.now()
     for i, start in enumerate(["AA"] + unopened):
+        values[i] = valves[start].rate
         for j, dest in enumerate(["AA"] + unopened):
             if j <= i:
                 continue
-            distances[i,j] = distances[j,i] = len(shortest_path(start, dest, valves))
+            distances[i,j] = distances[j,i] = (len(shortest_path(start, dest, valves)) - 1)
     tfinish = datetime.now()
 
     print(f"Calculated distance matrix in {tfinish-tstart}")
+
+    # Starting at AA, consider all valves reachable within remaining time
+    # Cutting off search when remaining time = 0 should make depth first search tractable.
+
+    def best_option(start:int, states:np.ndarray, remaining:int, distances:np.ndarray, values:np.ndarray) -> int:
+
+        value = values[start] * remaining
+        best = 0
+        for destination in np.nonzero((distances[start,:] < remaining) & (states != 1))[0]:
+            states[destination] = 1
+            remaining -= distances[start,destination] + 1
+            best = max(best, best_option(destination, states, remaining, distances, values))
+            remaining += distances[start,destination] + 1
+            states[destination] = 0
+
+        return value + best
+
+    states[0] = 1    # Consider valve "AA" turned on.
+    best = best_option(0, states, 30, distances, values)
+    print(f"Part 1: best option releases {best} pounds of pressure.")
 
     return
 
@@ -217,10 +181,59 @@ def part2() -> None:
 
     """Docstring"""
 
-    # inputs = get_inputs()
+    inputs = get_inputs(example=True)
+    valves = get_valves(inputs)
 
-    # return
+    unopened = [key for key, value in valves.items() if value.rate > 0]
+    print(f"{unopened=}")
 
+    distances = np.zeros((len(unopened)+1,len(unopened)+1), np.uint32)
+    states= np.zeros(len(unopened)+1, np.uint32)
+    values = np.zeros(len(unopened)+1, np.uint32)
+
+    tstart = datetime.now()
+    for i, start in enumerate(["AA"] + unopened):
+        values[i] = valves[start].rate
+        for j, dest in enumerate(["AA"] + unopened):
+            if j <= i:
+                continue
+            distances[i,j] = distances[j,i] = (len(shortest_path(start, dest, valves)) - 1)
+    tfinish = datetime.now()
+
+    print(f"Calculated distance matrix in {tfinish-tstart}")
+
+    # Starting at AA, consider all valves reachable within remaining time
+    # Cutting off search when remaining time = 0 should make depth first search tractable.
+
+    def best_option2(location:int, states:np.ndarray, remaining:int, distances:np.ndarray, values:np.ndarray) -> int:
+
+        value = values[location] * remaining
+        best = 0
+        path = [location]
+        for destination in np.nonzero((distances[location,:] < remaining) & (states != 1))[0]:
+            states[destination] = 1
+            remaining -= distances[location,destination] + 1
+            test, route = best_option2(destination, states, remaining, distances, values)
+            if test > best:
+                best = test
+                path = [location] + route
+            remaining += distances[location,destination] + 1
+            states[destination] = 0
+
+        return value + best, path
+
+    states[0] = 1    # Consider valve "AA" turned on.
+    human, route = best_option2(0, states, 26, distances, values)
+    for valve in route:
+        states[valve] = 1
+    elephant, path = best_option2(0, states, 26, distances, values)
+    print(f"Part 2: human releases {human} pounds of pressure on route {route}.")
+    print(f"Part 2: elephant releases {elephant} pounds of pressure on route {path}.")
+    print(f"Part 2: total of {human+elephant} pounds of pressure released")
+
+    # BTW, this does _not_ return the correct answer for the example data.
+
+    return
 
 if __name__ == "__main__":
-    main(True, False)
+    main(False, True)
