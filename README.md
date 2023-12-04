@@ -5,6 +5,7 @@ Solutions for Advent of Code
 
 |Year|Advent of Code|On GitHub|
 |:-:|:-:|:-:|
+|2023|[AoC 2023](http://adventofcode.com/2023)|[AoC 2023 on GitHub](https://github.com/topics/advent-of-code-2023)|
 |2022|[AoC 2022](http://adventofcode.com/2022)|[AoC 2022 on GitHub](https://github.com/topics/advent-of-code-2022)|
 |2021|[AoC 2021](http://adventofcode.com/2021)|[AoC 2021 on GitHub](https://github.com/topics/advent-of-code-2021)|
 |2020|[AoC 2020](http://adventofcode.com/2020)|[AoC 2020 on GitHub](https://github.com/topics/advent-of-code-2020)|
