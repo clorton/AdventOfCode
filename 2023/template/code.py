@@ -11,3 +11,4 @@ INPUT_FILE = Path(__file__).parent / "input.txt"    # (Path(__file__).stem + ".t
 with INPUT_FILE.open("r") as file:
     input = [line.strip() for line in file.readlines()]
 
+pass
