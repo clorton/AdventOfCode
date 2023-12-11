@@ -117,13 +117,13 @@ for y in range(1,mutable.shape[0]-1):
         else:
             tile = pipes[y,x]
             inside, bars = {
-                VERT: lambda i,_b : (not i,0),
-                HORZ: lambda i,b : (i,b),
-                NE: lambda i,_b : (i,1),
-                SE: lambda i,_b : (i,-1),
-                SW: lambda i,b : [(i,0),(None),(not i,0)][b+1],
-                ANIMAL: lambda i,b : [(i,0),(None),(not i,0)][b+1],
-                NW: lambda i,b : [(not i,0),(None),(i,0)][b+1],
+                VERT: lambda i,_b : (not i,0),  # crossing a vertical pipe switch from out to in or in to out
+                HORZ: lambda i,b : (i,b),       # following a horiztonal pipe doesn't change the situation
+                NE: lambda i,_b : (i,1),        # count one (half) unit of pipe in the +y direction
+                SE: lambda i,_b : (i,-1),       # count one (half) unit of pipe in the -y direction
+                SW: lambda i,b : [(i,0),(None),(not i,0)][b+1],     # add one (half) more unit of pipe in +y direction, if we have a full (2) unit(s) of pipe, switch inside/outside
+                ANIMAL: lambda i,b : [(i,0),(None),(not i,0)][b+1], # cheat, in my input the ANIMAL tile is a SW tile
+                NW: lambda i,b : [(not i,0),(None),(i,0)][b+1],     # add one (half) more unit of pipe in -y direction, if we have a full (2) unit(s) of pipe, switch inside/outside
             }[tile](inside, bars)
     print(f"{contained=}")
 
