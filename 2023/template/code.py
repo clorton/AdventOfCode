@@ -5,6 +5,8 @@ from pathlib import Path
 
 import numpy as np
 
+from tqdm import tqdm
+
 WORKING_DIRECTORY = Path(__file__).parent.absolute()
 INPUT_FILE = Path(__file__).parent / "input.txt"    # (Path(__file__).stem + ".txt")
 
