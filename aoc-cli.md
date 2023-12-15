@@ -32,5 +32,6 @@ aoc submit -l 2
 ```sh
 export AOC_SESSION="53616c7465645f5faadf4926fa3f0e116ee0c1aac9dfa1712ab9cce5d14cd104fe864f9f1a20ef9e2137233a07ef40d411a07aef46873d5e21d6e94f98cbac72"
 cd 2023
-aoc new -y 2023 -d 15 # This will create the "day_15" folder and download the problem into it
+# This will create the "day_16" folder and download the problem into it
+aoc new -y 2023 -d 16
 ```
