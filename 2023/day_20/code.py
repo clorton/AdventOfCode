@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 from collections import defaultdict, deque
-from math import prod
+from math import prod, lcm  
 from pathlib import Path
 
 import numpy as np
@@ -158,16 +158,24 @@ print(f"{counts=}, {prod(counts.values())=}")
 
 modules = initialize(input)
 push = 1
+cycles = { "pr": 0, "rd": 0, "bt": 0, "fv": 0 }
 while True:
     button = Button("button")
     button.pulse("button", LOW)
     while pulses:
         source, value, destination = pulses.popleft()
+        if source in ["pr", "rd", "bt", "fv"] and (value == HIGH) and (cycles[source] == 0):
+            cycles[source] = push
         modules[destination].pulse(source, value)
     if modules["rx"].low > 0:
         print(f"{modules['rx'].low=}")
         print(f"{push=}")
         break
+    if all(cycles.values()):
+        break
     push += 1
+
+print(f"{cycles=}")
+print(f"{lcm(*cycles.values())=}")
 
 pass
