@@ -10,52 +10,50 @@ verbose = False
 
 # Start at "S" facing east.
 
-"""
-lines = [
-    "###############",
-    "#.......#....E#",
-    "#.#.###.#.###.#",
-    "#.....#.#...#.#",
-    "#.###.#####.#.#",
-    "#.#.#.......#.#",
-    "#.#.#####.###.#",
-    "#...........#.#",
-    "###.#.#####.#.#",
-    "#...#.....#.#.#",
-    "#.#.#.###.#.#.#",
-    "#.....#...#.#.#",
-    "#.###.#.#.#.#.#",
-    "#S..#.....#...#",
-    "###############",
-]
+# lines = [
+#     "###############",
+#     "#.......#....E#",
+#     "#.#.###.#.###.#",
+#     "#.....#.#...#.#",
+#     "#.###.#####.#.#",
+#     "#.#.#.......#.#",
+#     "#.#.#####.###.#",
+#     "#...........#.#",
+#     "###.#.#####.#.#",
+#     "#...#.....#.#.#",
+#     "#.#.#.###.#.#.#",
+#     "#.....#...#.#.#",
+#     "#.###.#.#.#.#.#",
+#     "#S..#.....#...#",
+#     "###############",
+# ]
 
 # 7036 = 7 turns and 36 steps
 # 45 tiles on one of the best routes
-"""
 
-"""lines = [
-    "#################",
-    "#...#...#...#..E#",
-    "#.#.#.#.#.#.#.#.#",
-    "#.#.#.#...#...#.#",
-    "#.#.#.#.###.#.#.#",
-    "#...#.#.#.....#.#",
-    "#.#.#.#.#.#####.#",
-    "#.#...#.#.#.....#",
-    "#.#.#####.#.###.#",
-    "#.#.#.......#...#",
-    "#.#.###.#####.###",
-    "#.#.#...#.....#.#",
-    "#.#.#.#####.###.#",
-    "#.#.#.........#.#",
-    "#.#.#.#########.#",
-    "#S#.............#",
-    "#################",
-]
+# lines = [
+#     "#################",
+#     "#...#...#...#..E#",
+#     "#.#.#.#.#.#.#.#.#",
+#     "#.#.#.#...#...#.#",
+#     "#.#.#.#.###.#.#.#",
+#     "#...#.#.#.....#.#",
+#     "#.#.#.#.#.#####.#",
+#     "#.#...#.#.#.....#",
+#     "#.#.#####.#.###.#",
+#     "#.#.#.......#...#",
+#     "#.#.###.#####.###",
+#     "#.#.#...#.....#.#",
+#     "#.#.#.#####.###.#",
+#     "#.#.#.........#.#",
+#     "#.#.#.#########.#",
+#     "#S#.............#",
+#     "#################",
+# ]
 
 # 11048 = 11 turns and 48 steps
 # 64 tiles on one of the best routes
-"""
+
 
 WALL = ord("#")
 SPACE = ord(".")
@@ -125,77 +123,76 @@ def solve(maze):
 
 best = solve(maze)
 
-import hashlib
+from collections import namedtuple
+
+Position = namedtuple("Position", ["x", "y"])
+Vector = namedtuple("Vector", ["dx", "dy"])
+Candidate = namedtuple("Candidate", ["pos", "dir", "turns", "steps", "parent"])
+
+vecidx = {
+    (0, 1): 0,
+    (1, 0): 1,
+    (0, -1): 2,
+    (-1, 0): 3,
+}
 
 def solve2(maze, best):
-    ry, rx = np.where(maze == START)
-    rx, ry = rx[0], ry[0]
-
-    max_steps = best % 1000
-    max_turns = best // 1000
-
-    seen = set()
-
     solutions = []
-    consider = [(rx, ry, 1, 0, 0, 0, {(rx, ry)})]  # x, y, dx, dy, turns, steps, tiles
-    iterations = 0
-    w, h = 25, -25
+    # cost to _exit_ is not the same as cost to _enter_ so keep
+    # track of costs for each incoming direction
+    costs = np.full((maze.shape[0], maze.shape[1], 4), np.inf)
+    ys, xs = np.where(maze == START)
+    sx, sy = xs[0], ys[0]
+    consider = [Candidate(Position(sx, sy), Vector(1, 0), 0, 0, None)]
     while consider:
-        iterations += 1
-        if iterations % 100 == 0:
-            print(f"{len(consider)=}", end="\r")
-        cx, cy, cdx, cdy, cturns, csteps, ctiles = consider.pop(0)
-        # if cx == 17 and cy == 128:
-        #     ...
-        if True:
-            p = np.zeros_like(maze, dtype=np.uint8)
-            for x, y in ctiles:
-                p[y, x] = 1
-            d = hashlib.sha256(p.tobytes()).hexdigest()
-            if d in seen:
-                ...
-            seen.add(d)
-        #     for row in p[h:,:w]:
-        #         print("".join(map(str, row)))
-        #     print()
-        #     ...
+
+        if len(consider) % 100 == 0:
+            print(f"Considering {len(consider)} candidates.\r", end="")
+
+        candidate = consider.pop(0)
+
+        cx, cy = candidate.pos
+        if maze[cy, cx] == WALL:
+            continue
+        if maze[cy, cx] == END:
+            solutions.append(candidate)
+            continue
+
+        if candidate.turns*1000 + candidate.steps >= best:
+            continue
+
+        iv = vecidx[candidate.dir]
+        if (cost:= candidate.turns*1000 + candidate.steps) > costs[cy, cx, iv]:
+            continue
+        costs[cy, cx, iv] = cost
+
         for p in [-1, 0, 1]:
-            rotation = complex(cdx, cdy) * (complex(0, 1) ** p)
+            rotation = complex(candidate.dir.dx, candidate.dir.dy) * (complex(0, 1) ** p)
             dx, dy = int(rotation.real), int(rotation.imag)
-            turns = cturns + abs(p)
-            if turns > max_turns:
-                # print("x", end="")
-                continue
+            turns = candidate.turns + abs(p)
+            steps = candidate.steps + 1
             testx, testy = cx + dx, cy + dy
-            steps = csteps + 1
-            if steps > max_steps:
-                # print("x", end="")
-                continue
-            score = 1000 * turns + steps
-            if maze[testy, testx] == WALL:
-                continue
-            if (maze[testy, testx] == SPACE) and ((testx, testy) not in ctiles):
-                # print("+", end="")
-                consider.append((testx, testy, dx, dy, turns, steps, ctiles | {(testx, testy)}))
-            if (maze[testy, testx] == END) and ((testx, testy) not in ctiles):
-                print(f"\nFound the end in {score} steps with {len(ctiles) + 1} tiles.")
-                solutions.append((score, ctiles | {(testx, testy)}))
+            consider.append(Candidate(Position(testx, testy), Vector(dx, dy), turns, steps, candidate))
 
     print()
 
-    print(f"Found {len(solutions)} solutions.")
-    minimum = min(solutions, key=lambda x: x[0])[0]
-    print(f"Best solutions cost {minimum}.")
-    totaltiles = set()
-    for solution in solutions:
-        cost, tiles = solution
-        if cost == minimum:
-            totaltiles.update(tiles)
+    return solutions
 
-    print(f"Total tiles: {len(totaltiles)}.")
+s = solve2(maze, best)
 
-    return
-
-solve2(maze, best)
+minimum = min(map(lambda c: c.turns*1000+c.steps, s))
+print(f"Minimum cost is {minimum}.")
+filtered = list(filter(lambda c: c.turns*1000+c.steps == minimum, s))
+print(f"Number of routes with minimum cost: {len(filtered)}.")
+# viz = np.array(maze)
+tiles = set()
+for route in filtered:
+    while route is not None:
+        # viz[route.pos.y, route.pos.x] = ord(dirs[(route.dir.dx, route.dir.dy)]) # ord("O")
+        tiles.add(route.pos)
+        route = route.parent
+# for row in viz:
+#     print("".join([chr(c) for c in row]))
+print(f"Number of tiles on the shortest route(s): {len(tiles)}.")
 
 print("Done.")
