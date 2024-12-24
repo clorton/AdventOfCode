@@ -139,7 +139,33 @@ for code in lines:
 
 print(f"Complexity: {complexity}")
 
-# for p in set(map(lambda p: "".join(p),permutations("<<^^"))): print(p+"A: ", directional(directional(p+"A")))
+# Part 2
+
+from functools import lru_cache
+
+@lru_cache
+def foo(s, depth):
+    if depth == 0:
+        return len(s)
+    return solve(directional(s), depth)
+
+def solve(code, depth):
+    # code = list of lists of strings, e.g. [['<A'], ['^A'], ['^^>A', '^>^A', '>^^A'], ['vvvA']]
+
+    lengths = []
+    for a in code:  # a = list of strings, e.g. ['<A'] or ['^^>A', '^>^A', '>^^A']
+        minima = [foo(b, depth-1) for b in a]   # depth first search
+        minimum = min(minima)
+        lengths.append(minimum)
+    return sum(lengths)
+
+complexity = 0
+for code in lines:
+    num = numeric(code)
+    length = solve(num, 26)
+    print(f"{code}: {length}")
+    complexity += length * int(code[:-1], 10)
+
+print(f"Complexity: {complexity}")
 
 print("Done.")
-
