@@ -64,6 +64,7 @@ print(f"len(hasat) = {len(hasat)}")
 
 # Part 2
 
+"""
 import networkx as nx
 
 # Create a sample graph
@@ -77,5 +78,17 @@ all_cliques = list(nx.find_cliques(G))
 largest_clique = max(all_cliques, key=len)
 
 print("Largest clique:", ",".join(sorted(largest_clique)))
+"""
+
+c = defaultdict(set)
+for k, v in connections.items():
+    for l in range(1, len(v)+1):
+        for combo in combinations(v, l):
+            c[",".join(sorted([k] + list(combo)))].add(k)
+
+f = {k:v for k,v in c.items() if ",".join(sorted(v)) == k}
+maximum = max(map(lambda k: len(k), f.keys()))
+m = {k:v for k,v in f.items() if len(k) == maximum}
+print(m)
 
 print("Done.")
