@@ -72,6 +72,12 @@ blines = [
 from collections import namedtuple
 Gate = namedtuple("Gate", ["a", "op", "b", "c"])
 
+ops = {
+    "AND": lambda x, y: x & y,
+    "OR": lambda x, y: x | y,
+    "XOR": lambda x, y: x ^ y,
+}
+
 wires = {}
 gates = set()
 start = True
@@ -85,27 +91,22 @@ for line in lines:
         wires[wire] = int(value)
     else:
         a, op, b, _, c = line.split()
-        gates.add(Gate(a, op, b, c))
+        gates.add(Gate(a, ops[op], b, c))
 
 print(f"{len(wires)=}, {len(gates)=}")
 
 def run(wires, gates):
     state = dict(wires)
-    check = list(gates)
-    while check:
-        gate = check.pop(0)
-        a, op, b, c = gate
-        if a in state and b in state:
-            if op == "AND":
-                state[c] = state[a] & state[b]
-            elif op == "OR":
-                state[c] = state[a] | state[b]
-            elif op == "XOR":
-                state[c] = state[a] ^ state[b]
+    test = list(gates)
+    while test:
+        retest = []
+        for gate in test:
+            a, op, b, c = gate
+            if a in state and b in state:
+                state[c] = op(state[a], state[b])
             else:
-                raise RuntimeError(f"Unknown operator: {op}")
-        else:
-            check.append(gate)
+                retest.append(gate)
+        test = retest
 
     return state
 
@@ -123,93 +124,208 @@ print(f"{outputs=} = {int(outputs, 2)}")
 
 ## Part 2
 
-check00 = {k:0 for k in wires}
-state00 = run(check00, gates)
-print(f"{decode(state00)=}")
+from collections import deque
 
-check01 = {k: 0 if k.startswith("x") else 1 for k in wires}
-state01 = run(check01, gates)
-print(f"{decode(state01)=}")
-
-check10 = {k: 1 if k.startswith("x") else 0 for k in wires}
-state10 = run(check10, gates)
-print(f"{decode(state10)=}")
-
-check11 = {k: 1 for k in wires}
-state11 = run(check11, gates)
-print(f"{decode(state11)=}")
-
-checker = dict(wires)
-for k in checker:
-    if k.startswith("x"):
-        checker[k] = int(k[1:]) % 2
-    else:
-        checker[k] = 1 - (int(k[1:]) % 2)
-stateck = run(checker, gates)
-print(f"{decode(stateck)=}")
-
-def findall(gates, wire):
-    result = set()
-    check = [wire]
+def run2(wires, gates):
+    state = dict(wires)
+    check = deque(gates)
     while check:
-        wire = check.pop(0)
-        for gate in gates:
-            if gate.c == wire:
-                result.add(gate)
-                check.append(gate.a)
-                check.append(gate.b)
+        gate = check.popleft()
+        a, op, b, c = gate
+        if a in state and b in state:
+            state[c] = op(state[a], state[b])
+        else:
+            check.append(gate)
+            if not any(a in state and b in state for a, op, b, c in check):
+                raise RuntimeError("Stuck")
 
+    return state
+
+xkeys = [f"x{i:02d}" for i in range(45)]
+ykeys = [f"y{i:02d}" for i in range(45)]
+zkeys = [f"z{i:02d}" for i in range(46)]
+
+from functools import reduce
+
+def trial(x, y, gates):
+    wires = {k:x>>i & 1 for i, k in enumerate(xkeys)}
+    wires.update({k:y>>i & 1 for i, k in enumerate(ykeys)})
+    state = run2(wires, gates)
+    result = reduce(lambda a, b: a | b[1] << b[0], enumerate([state[k] for k in zkeys]), 0)
     return result
 
-f = findall(gates, "z00")
+x = 0b101101010111101101000111000000010110000000011
+y = 0b100011100111110100010111100110001110000011011
+# print(f"{trial(x, y, gates)=}")
+assert trial(x, y, gates) == 43942008931358
 
-def test(x, y, gates):
-    wires = {}
-    for p in range(len(x)):
-        wires[f"x{p:02}"] = int(x[p])
-    for p in range(len(y)):
-        wires[f"y{p:02}"] = int(y[p])
-    s = run(wires, gates)
-    o = decode(s)
-    print(f"{x=}")
-    print(f"{y=}")
-    print(f"{o=}")
-    print()
+def test(bit, gates):
 
-test("0"*45+"0", "0"*45+"0", gates)
-test("0"*45+"0", "0"*45+"1", gates)
-test("0"*45+"1", "0"*45+"0", gates)
-test("0"*45+"1", "0"*45+"1", gates)
+    value = 1<<bit
+    output = trial(value, 0, gates)
+    if output != value:
+        # print(f"Failed for 1+0 {bit=:2}, {output=:46} != {value=:46}")
+        return False
+    output = trial(0, value, gates)
+    if output != value:
+        # print(f"Failed for 0+1 {bit=:2}, {output=:46} != {value=:46}")
+        return False
+    output = trial(value, value, gates)
+    if output != (value + value):
+        # print(f"Failed for 1+1 {bit=:2}, {output=:46} != {value=:46}")
+        return False
 
-suspect = set()
-for position in range(0, 45):
-    for test in [(0, 1, 1), (1, 0, 1), (1, 1, 0)]:
-        inputs = {k:0 for k in wires}
-        x, y, z = test
-        inputs[f"x{position:02}"] = x
-        inputs[f"y{position:02}"] = y
-        state = run(inputs, gates)
-        xs = ["0"]*45; xs[44-position] = str(x); xs = "".join(xs)
-        ys = ["0"]*45; ys[44-position] = str(y); ys = "".join(ys)
-        o = decode(state)
-        if state[f"z{position:02}"] != z:
-            print(f"Failed at {position=}")
-            print(f"{xs=}")
-            print(f"{ys=}")
-            print(f"{o=}")
-            suspect.add(f"z{position:02}")
-        if x and y and state[f"z{position+1:02}"] != 1:
-            print(f"Failed at {position+1=}")
-            print(f"{xs=}")
-            print(f"{ys=}")
-            print(f"{o=}")
-            suspect.add(f"z{position+1:02}")
-print(f"{suspect=}")
+    return True
 
-# for wire in sorted(suspect):
-#     f = findall(gates, wire)
-#     print(f"{wire=} {len(f)=}")
-#     for g in f:
-#         print(f"\t{g}")
+from itertools import combinations
+
+# for bit in range(45):
+#     if not test(bit, gates):
+#         print(f"Failed {bit=:2}")
+#         fixed = set(gates)
+#         for gateA, gateB in tqdm(list(combinations(gates, 2))):
+#             fixed.remove(gateA)
+#             fixed.remove(gateB)
+#             fixed.add(switchA := Gate(gateA.a, gateA.op, gateA.b, gateB.c))
+#             fixed.add(switchB := Gate(gateB.a, gateB.op, gateB.b, gateA.c))
+#             try:
+#                 if test(bit, fixed):
+#                     print(f"Fixed {bit=:2} with {gateA=} and {gateB=}")
+#                     break
+#             except RuntimeError:
+#                 pass
+#             fixed.remove(switchB)
+#             fixed.remove(switchA)
+#             fixed.add(gateB)
+#             fixed.add(gateA)
+
+def swap(gates, a, b):
+    gates.remove(a)
+    gates.remove(b)
+    gates.add(switchA := Gate(a.a, a.op, a.b, b.c))
+    gates.add(switchB := Gate(b.a, b.op, b.b, a.c))
+    return switchA, switchB
+
+fixed = set(gates)
+# swap(fixed, Gate(a='fgb', op=ops['XOR'], b='bmd', c='z11'), Gate(a='x10', op=ops['AND'], b='y10', c='z10'))
+# # swap(fixed, Gate(a='jfb', op=ops['XOR'], b='vgw', c='z18'), Gate(a='qjg', op=ops['AND'], b='jjf', c='z17'))
+# swap(fixed, Gate(a='jjf', op=ops['XOR'], b='qjg', c='fhg'), Gate(a='qjg', op=ops['AND'], b='jjf', c='z17'))
+# swap(fixed, Gate(a='dvb', op=ops['XOR'], b='jsn', c='z35'), Gate(a='ftc', op=ops['OR'], b='fsq', c='bwc'))
+# # swap(fixed, Gate(a='gqm', op=ops['OR'], b='kfp', c='mnd'), Gate(a='y39', op=ops['AND'], b='x39', c='rvd'))
+# swap(fixed, Gate(a='kmh', op=ops['XOR'], b='mnd', c='tnc'), Gate(a='rvd', op=ops['OR'], b='wrj', c='z39'))
+
+def test2(bit, gates):
+
+    for x in [0, 1, 2, 3]:
+        for y in [0, 1, 2, 3]:
+            value1 = x<<bit
+            value2 = y<<bit
+            output = trial(value1, value2, gates)
+            if output != (value1 + value2):
+                return False
+
+    return True
+
+# benchmark = set()
+# for bit in tqdm(range(44)):
+#     try:
+#         if not test2(bit, gates):
+#             benchmark.add(bit)
+#     except RuntimeError:
+#         benchmark.add(bit)
+# print(f"{benchmark=}")
+
+# for gateA, gateB in tqdm(list(combinations(gates, 2))):
+#     switchA, switchB = swap(fixed, gateA, gateB)
+#     failed = set()
+#     for bit in benchmark:
+#         try:
+#             if not test(bit, fixed):
+#                 failed.add(bit)
+#         except RuntimeError:
+#             failed.add(bit)
+#     if failed != benchmark:
+#         print(f"Switch {gateA=} and {gateB=} fixed {benchmark - failed}")
+#     swap(fixed, switchA, switchB)
+
+"""
+Switch gateA=Gate(a='x10', op=AND, b='y10', c='z10') and gateB=Gate(a='fgb', op=XOR, b='bmd', c='z11') fixed {9, 10}
+Switch gateA=Gate(a='x10', op=AND, b='y10', c='z10') and gateB=Gate(a='sst', op=OR , b='vcf', c='fgb') fixed {9, 10}
+Switch gateA=Gate(a='x10', op=AND, b='y10', c='z10') and gateB=Gate(a='kck', op=XOR, b='skm', c='vcf') fixed {9, 10}
+
+Switch gateA=Gate(a='qjg', op=AND, b='jjf', c='z17') and gateB=Gate(a='jjf', op=XOR, b='qjg', c='fhg') fixed {16, 17}
+
+Switch gateA=Gate(a='y35', op=AND, b='x35', c='dvb') and gateB=Gate(a='y35', op=XOR, b='x35', c='fsq') fixed {35}
+Switch gateA=Gate(a='dvb', op=XOR, b='jsn', c='z35') and gateB=Gate(a='y35', op=XOR, b='x35', c='fsq') fixed {35}
+Switch gateA=Gate(a='dvb', op=XOR, b='jsn', c='z35') and gateB=Gate(a='ftc', op=OR , b='fsq', c='bwc') fixed {35}
+Switch gateA=Gate(a='dvb', op=XOR, b='jsn', c='z35') and gateB=Gate(a='ncq', op=XOR, b='bwc', c='z36') fixed {35}
+
+Switch gateA=Gate(a='kmh', op=XOR, b='mnd', c='tnc') and gateB=Gate(a='y39', op=AND, b='x39', c='rvd') fixed {38, 39}
+Switch gateA=Gate(a='kmh', op=XOR, b='mnd', c='tnc') and gateB=Gate(a='rvd', op=OR , b='wrj', c='z39') fixed {38, 39}
+Switch gateA=Gate(a='y39', op=AND, b='x39', c='rvd') and gateB=Gate(a='rtf', op=XOR, b='tnc', c='z40') fixed {38, 39}
+Switch gateA=Gate(a='rtf', op=XOR, b='tnc', c='z40') and gateB=Gate(a='rvd', op=OR , b='wrj', c='z39') fixed {38, 39}
+"""
+
+fixed = set(gates)
+# for swap1 in [("z10", "z11"), ("z10", "fgb"), ("z10", "vcf")]:
+a1 = next(filter(lambda g: g.c == "z10", fixed))
+b1 = next(filter(lambda g: g.c == "vcf", fixed))
+c1, d1 = swap(fixed, a1, b1)
+# for swap2 in [("z17", "fhg")]:
+a2 = next(filter(lambda g: g.c == "z17", fixed))
+b2 = next(filter(lambda g: g.c == "fhg", fixed))
+c2, d2 = swap(fixed, a2, b2)
+# for swap3 in [("dvb", "fsq"), ("z35", "fsq"), ("z35", "bwc"), ("z35", "z36")]:
+a3 = next(filter(lambda g: g.c == "dvb", fixed))
+b3 = next(filter(lambda g: g.c == "fsq", fixed))
+c3, d3 = swap(fixed, a3, b3)
+# for swap4 in [("tnc", "rvd"), ("tnc", "z39"), ("rvd", "z40"), ("z40", "z39")]:
+a4 = next(filter(lambda g: g.c == "tnc", fixed))
+b4 = next(filter(lambda g: g.c == "z39", fixed))
+c4, d4 = swap(fixed, a4, b4)
+for bit in tqdm(range(44)):
+    try:
+        if not test2(bit, fixed):
+            print(f"Failed {bit=:2}")
+    except RuntimeError:
+        print(f"Failed {bit=:2}")
+print(",".join(sorted([a1.c, b1.c, a2.c, b2.c, a3.c, b3.c, a4.c, b4.c])))
+
+from itertools import product
+
+fixed = set(gates)
+for swap1, swap2, swap3, swap4 in tqdm(list(product([("z10", "z11"), ("z10", "fgb"), ("z10", "vcf")], [("z17", "fhg")], [("dvb", "fsq"), ("z35", "fsq"), ("z35", "bwc"), ("z35", "z36")], [("tnc", "rvd"), ("tnc", "z39"), ("rvd", "z40"), ("z40", "z39")]))):
+    a1 = next(filter(lambda g: g.c == swap1[0], fixed))
+    b1 = next(filter(lambda g: g.c == swap1[1], fixed))
+    c1, d1 = swap(fixed, a1, b1)
+    a2 = next(filter(lambda g: g.c == swap2[0], fixed))
+    b2 = next(filter(lambda g: g.c == swap2[1], fixed))
+    c2, d2 = swap(fixed, a2, b2)
+    a3 = next(filter(lambda g: g.c == swap3[0], fixed))
+    b3 = next(filter(lambda g: g.c == swap3[1], fixed))
+    c3, d3 = swap(fixed, a3, b3)
+    a4 = next(filter(lambda g: g.c == swap4[0], fixed))
+    b4 = next(filter(lambda g: g.c == swap4[1], fixed))
+    c4, d4 = swap(fixed, a4, b4)
+    good = True
+    for bit in range(44):
+        try:
+            if not test2(bit, fixed):
+                good = False
+                break
+        except RuntimeError:
+            good = False
+            break
+    if good:
+        print(f"{swap1=}")
+        print(f"{swap2=}")
+        print(f"{swap3=}")
+        print(f"{swap4=}")
+        print(",".join(sorted([swap1[0], swap1[1], swap2[0], swap2[1], swap3[0], swap3[1], swap4[0], swap4[1]])))
+        break
+    swap(fixed, c4, d4)
+    swap(fixed, c3, d3)
+    swap(fixed, c2, d2)
+    swap(fixed, c1, d1)
 
 print("Done.")
